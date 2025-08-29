@@ -141,7 +141,10 @@ if uploaded:
                     progress.progress(int(i / total * 100))
             df = pd.DataFrame(results)
             st.success("Validation complete.")
-            st.dataframe(df, height=400)
+            # Only show safe columns in Streamlit table to avoid Arrow errors
+safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
+st.dataframe(df[safe_cols], height=400)
+
 
             csv = df.to_csv(index=False).encode("utf-8")
             st.download_button("Download CSV report", csv, file_name="pdf_link_report.csv", mime="text/csv")
