@@ -143,8 +143,15 @@ if uploaded:
             st.success("Validation complete.")
             # Only show safe columns in Streamlit table to avoid Arrow errors
 safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
+# Only show safe columns in Streamlit table to avoid Arrow errors
+safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
 st.dataframe(df[safe_cols], height=400)
 
-
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button("Download CSV report", csv, file_name="pdf_link_report.csv", mime="text/csv")
+# Allow user to download full report
+csv = df.to_csv(index=False).encode("utf-8")
+st.download_button(
+    "Download CSV report",
+    csv,
+    file_name="pdf_link_report.csv",
+    mime="text/csv"
+)
