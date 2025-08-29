@@ -115,43 +115,42 @@ if uploaded:
         st.dataframe(df_candidates[["page","source","target","kind"]], height=300)
 
         if st.button("Run link validation (simple HTTP checks)"):
-            st.info("Validating links — this may take a little while depending on how many links there are.")
-            results = []
-            progress = st.progress(0)
-            total = len(candidates)
-            i = 0
-            # Use a ThreadPool for parallel checks
-            with ThreadPoolExecutor(max_workers=8) as ex:
-                futures = {ex.submit(check_url_simple, c["target"]): c for c in candidates}
-                for fut in as_completed(futures):
-                    c = futures[fut]
-                    res = fut.result()
-                    results.append({
-                        "page": c["page"],
-                        "source": c["source"],
-                        "target": c["target"],
-                        "kind": c["kind"],
-                        "status": res["status"],
-                        "http_code": res.get("code"),
-                        "final_url": res.get("final_url"),
-                        "error": res.get("error"),
-                        "bbox": c["bbox"]
-                    })
-                    i += 1
-                    progress.progress(int(i / total * 100))
-            df = pd.DataFrame(results)
-            st.success("Validation complete.")
-            # Only show safe columns in Streamlit table to avoid Arrow errors
-safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
-# Only show safe columns in Streamlit table to avoid Arrow errors
-safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
-st.dataframe(df[safe_cols], height=400)
+    st.info("Validating links — this may take a little while depending on how many links there are.")
+    results = []
+    progress = st.progress(0)
+    total = len(candidates)
+    i = 0
+    # Use a ThreadPool for parallel checks
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        futures = {ex.submit(check_url_simple, c["target"]): c for c in candidates}
+        for fut in as_completed(futures):
+            c = futures[fut]
+            res = fut.result()
+            results.append({
+                "page": c["page"],
+                "source": c["source"],
+                "target": c["target"],
+                "kind": c["kind"],
+                "status": res["status"],
+                "http_code": res.get("code"),
+                "final_url": res.get("final_url"),
+                "error": res.get("error"),
+                "bbox": c["bbox"]
+            })
+            i += 1
+            progress.progress(int(i / total * 100))
+    df = pd.DataFrame(results)
+    st.success("Validation complete.")
 
-# Allow user to download full report
-csv = df.to_csv(index=False).encode("utf-8")
-st.download_button(
-    "Download CSV report",
-    csv,
-    file_name="pdf_link_report.csv",
-    mime="text/csv"
-)
+    # Only show safe columns in Streamlit table to avoid Arrow errors
+    safe_cols = ["page", "source", "target", "kind", "status", "http_code", "final_url"]
+    st.dataframe(df[safe_cols], height=400)
+
+    # Allow user to download full report
+    csv = df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "Download CSV report",
+        csv,
+        file_name="pdf_link_report.csv",
+        mime="text/csv"
+    )
